@@ -1,0 +1,89 @@
+import React, { useState } from 'react';
+import Navigation from './components/Navigation';
+import DegreeAnalyzer from './components/DegreeAnalyzer';
+import SkillRoadmap from './components/SkillRoadmap';
+import ScenarioSimulator from './components/ScenarioSimulator';
+
+export default function App() {
+  const [activeTab, setActiveTab] = useState('degree-analyzer');
+  const [courseQuery, setCourseQuery] = useState('Law & Legal Studies');
+  const [analysisData, setAnalysisData] = useState(null);
+
+  return (
+    <div className="app-layout">
+      {/* Navigation Header */}
+      <Navigation
+        activeTab={activeTab}
+        setActiveTab={setActiveTab}
+      />
+
+      {/* Main Content Area */}
+      <main className="main-content container">
+        {activeTab === 'degree-analyzer' && (
+          <DegreeAnalyzer
+            courseQuery={courseQuery}
+            setCourseQuery={setCourseQuery}
+            analysisData={analysisData}
+            setAnalysisData={setAnalysisData}
+          />
+        )}
+
+        {activeTab === 'skill-roadmap' && (
+          <SkillRoadmap analysisData={analysisData} />
+        )}
+
+        {activeTab === 'scenario-simulator' && (
+          <ScenarioSimulator analysisData={analysisData} />
+        )}
+      </main>
+
+      {/* Footer */}
+      <footer className="footer">
+        <div className="container footer-content">
+          <p>© 2026 GRAYMARK HORIZON — All Rights Reserved</p>
+          <div className="footer-links">
+            <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>Degree & Future Career Evolution Platform</span>
+          </div>
+        </div>
+      </footer>
+
+      <style>{`
+        .app-layout {
+          min-height: 100vh;
+          display: flex;
+          flex-direction: column;
+        }
+
+        .footer {
+          background: var(--bg-card);
+          border-top: 1px solid var(--border-color);
+          padding: 1.25rem 0;
+          margin-top: auto;
+          transition: background-color var(--transition-normal), border-color var(--transition-normal);
+        }
+
+        .footer-content {
+          display: flex;
+          align-items: center;
+          justify-content: space-between;
+          font-size: 0.8125rem;
+          color: var(--text-muted);
+        }
+
+        .footer-links {
+          display: flex;
+          align-items: center;
+          gap: 1rem;
+        }
+
+        @media (max-width: 640px) {
+          .footer-content {
+            flex-direction: column;
+            gap: 0.5rem;
+            text-align: center;
+          }
+        }
+      `}</style>
+    </div>
+  );
+}

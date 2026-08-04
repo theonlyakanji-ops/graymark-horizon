@@ -1,7 +1,7 @@
 /**
  * GRAYMARK HORIZON Engine Service
- * Analyzes open-ended academic courses & degrees to predict 5-year industry shifts,
- * displaced vs emerging skills, hybrid job titles, and skill-bridge roadmaps.
+ * Analyzes open-ended academic courses & degrees with deep sub-discipline breakdowns,
+ * 5-year disruption metrics, certification learning paths, and skill-bridge roadmaps.
  */
 
 const STORAGE_KEY = 'graymark_horizon_gemini_key';
@@ -44,7 +44,7 @@ async function callGeminiAPI(prompt, apiKey) {
 const delay = (ms) => new Promise(res => setTimeout(res, ms));
 
 /**
- * Open-Ended Degree Disruption Analyzer
+ * Open-Ended Degree Disruption Analyzer with Sub-Discipline Depth
  */
 export async function analyzeDegree(courseQuery) {
   if (!courseQuery || !courseQuery.trim()) {
@@ -66,6 +66,13 @@ Return a valid JSON object with this EXACT structure:
     "routineTaskAutomation": number (0-100),
     "humanAdvantageIndex": number (0-100)
   },
+  "subDisciplineBreakdown": [
+    {
+      "subField": "Specialization within ${courseQuery}",
+      "disruptionLevel": "High Disruption" | "Moderate Evolution" | "High Human Advantage",
+      "impactSummary": "How AI impacts this specific sub-field"
+    }
+  ],
   "whatIsObsolescent": [
     {
       "legacyTask": "Specific traditional task becoming automated",
@@ -83,19 +90,24 @@ Return a valid JSON object with this EXACT structure:
     {
       "phase": "Phase 1: Immediate 90-Day Bridge",
       "targetSkill": "Key technology/tool to master",
-      "actionPlan": "Concrete step-by-step action plan"
+      "actionPlan": "Step-by-step action plan",
+      "recommendedCertification": "Relevant certification or course",
+      "estimatedHours": "20-30 Hours"
     },
     {
       "phase": "Phase 2: 1-Year Master Strategy",
       "targetSkill": "Advanced hybrid capability",
-      "actionPlan": "Long-term career evolution strategy"
+      "actionPlan": "Long-term career evolution strategy",
+      "recommendedCertification": "Advanced certification or specialization",
+      "estimatedHours": "60-80 Hours"
     }
   ],
   "recommendedTools": [
     {
       "name": "Tool/Framework name",
       "category": "Category",
-      "whyItMatters": "Why students in ${courseQuery} must learn this"
+      "whyItMatters": "Why students in ${courseQuery} must learn this",
+      "learnUrl": "https://..."
     }
   ]
 }`;
@@ -107,22 +119,27 @@ Return a valid JSON object with this EXACT structure:
   }
 
   // --- SMART HORIZON FALLBACK ENGINE ---
-  await delay(1200);
+  await delay(1100);
 
   const queryLower = courseQuery.toLowerCase();
 
-  // Knowledge base patterns for common domains
-  let impactScore = 75;
+  let impactScore = 76;
   let autoScore = 70;
   let humanScore = 85;
+  let subDisciplines = [];
   let hybridRoles = [];
   let legacyTasks = [];
   let tools = [];
 
   if (queryLower.includes('law') || queryLower.includes('legal')) {
     impactScore = 78;
-    autoScore = 65;
-    humanScore = 90;
+    autoScore = 68;
+    humanScore = 88;
+    subDisciplines = [
+      { subField: "Corporate & M&A Law", disruptionLevel: "High Disruption", impactSummary: "Contract review, due diligence, and clause extraction are heavily automated by LLMs." },
+      { subField: "Courtroom Litigation & Advocacy", disruptionLevel: "High Human Advantage", impactSummary: "Cross-examination, emotional intelligence, and oral arguments remain uniquely human." },
+      { subField: "Regulatory & Data Privacy", disruptionLevel: "Moderate Evolution", impactSummary: "Growing demand to advise companies on AI ethics, GDPR compliance, and copyright." }
+    ];
     hybridRoles = [
       { title: "Legal Tech Architect & Prompt Strategist", description: "Designs automated contract analysis workflows using LLMs and compliance rules.", estimatedDemand: "Extremely High" },
       { title: "AI Ethics & Data Privacy Auditor", description: "Ensures enterprise generative AI models comply with global regulatory frameworks.", estimatedDemand: "High" }
@@ -132,13 +149,17 @@ Return a valid JSON object with this EXACT structure:
       { legacyTask: "Standard boilerplate contract drafting", reason: "Automated clause generators draft NDA/vendor templates instantly." }
     ];
     tools = [
-      { name: "Casetext / CoCounsel", category: "Legal AI", whyItMatters: "AI-driven legal research and brief drafting." },
-      { name: "Harvey AI", category: "Enterprise Legal LLM", whyItMatters: "Standard assistant used by top global law firms." }
+      { name: "CoCounsel by Casetext", category: "Legal AI", whyItMatters: "AI-driven legal research and brief drafting.", learnUrl: "https://casetext.com/cocounsel/" },
+      { name: "Harvey AI", category: "Enterprise Legal LLM", whyItMatters: "Standard assistant used by top global law firms.", learnUrl: "https://www.harvey.ai/" }
     ];
   } else if (queryLower.includes('account') || queryLower.includes('financ')) {
     impactScore = 82;
     autoScore = 80;
     humanScore = 80;
+    subDisciplines = [
+      { subField: "Bookkeeping & Compliance Audit", disruptionLevel: "High Disruption", impactSummary: "Transaction logging, invoice matching, and reconciliation are fully automated." },
+      { subField: "FP&A & Strategic Advisory", disruptionLevel: "Moderate Evolution", impactSummary: "Focus shifts from manual spreadsheet modeling to interpreting AI predictive forecasts." }
+    ];
     hybridRoles = [
       { title: "Financial AI Systems Auditor", description: "Verifies automated algorithmic bookkeeping and LLM financial forecasts for compliance.", estimatedDemand: "Extremely High" },
       { title: "Strategic FP&A Data Scientist", description: "Combines financial acumen with Python predictive models to guide M&A strategy.", estimatedDemand: "High" }
@@ -148,13 +169,17 @@ Return a valid JSON object with this EXACT structure:
       { legacyTask: "Basic tax return calculations", reason: "Rules-based automated software handles standard tax filings." }
     ];
     tools = [
-      { name: "Python (Pandas & SQL)", category: "Financial Analytics", whyItMatters: "Transforms traditional spreadsheets into automated data pipelines." },
-      { name: "MindBridge AI Audit", category: "Anomaly Detection", whyItMatters: "AI-powered risk analysis for audit firms." }
+      { name: "Python (Pandas & SQL)", category: "Financial Analytics", whyItMatters: "Transforms traditional spreadsheets into automated data pipelines.", learnUrl: "https://www.coursera.org/learn/python-for-applied-data-science-ai" },
+      { name: "MindBridge AI Audit", category: "Anomaly Detection", whyItMatters: "AI-powered risk analysis for audit firms.", learnUrl: "https://www.mindbridge.ai/" }
     ];
   } else if (queryLower.includes('design') || queryLower.includes('art') || queryLower.includes('graphic')) {
     impactScore = 85;
     autoScore = 72;
     humanScore = 88;
+    subDisciplines = [
+      { subField: "Production Graphic Design", disruptionLevel: "High Disruption", impactSummary: "Image resizing, background removal, and layout variations generated by GenAI." },
+      { subField: "Brand Strategy & Spatial UX", disruptionLevel: "High Human Advantage", impactSummary: "Deep human empathy, physical product interactions, and brand storytelling." }
+    ];
     hybridRoles = [
       { title: "Creative AI & GenAI Design Director", description: "Orchestrates AI generative models to rapidly prototype brand systems and UI concepts.", estimatedDemand: "Extremely High" },
       { title: "Spatial Computing & AR UX Designer", description: "Crafts 3D spatial user interfaces for next-generation headsets and AR glasses.", estimatedDemand: "High" }
@@ -164,11 +189,15 @@ Return a valid JSON object with this EXACT structure:
       { legacyTask: "Basic icon & asset vectorization", reason: "AI vector engines generate customizable icons on demand." }
     ];
     tools = [
-      { name: "Midjourney & ComfyUI", category: "Generative Media", whyItMatters: "Industry standard for rapid visual ideation and moodboards." },
-      { name: "Figma AI & Spline 3D", category: "Product Design", whyItMatters: "Interactive UI/UX design with automated component generation." }
+      { name: "Midjourney & ComfyUI", category: "Generative Media", whyItMatters: "Industry standard for rapid visual ideation and moodboards.", learnUrl: "https://www.midjourney.com/" },
+      { name: "Figma AI & Spline 3D", category: "Product Design", whyItMatters: "Interactive UI/UX design with automated component generation.", learnUrl: "https://www.figma.com/" }
     ];
   } else {
-    // Generic high-impact fallback for any course
+    // Generic sub-disciplines fallback
+    subDisciplines = [
+      { subField: `Core ${courseQuery} Execution`, disruptionLevel: "Moderate Evolution", impactSummary: "Routine administrative and documentation tasks are automated by AI." },
+      { subField: `Strategic ${courseQuery} Oversight`, disruptionLevel: "High Human Advantage", impactSummary: "Client relationships, high-stakes decisions, and creative leadership remain human." }
+    ];
     hybridRoles = [
       { title: `${courseQuery} AI Solutions Strategist`, description: `Applies artificial intelligence frameworks and data automation directly to ${courseQuery} workflows.`, estimatedDemand: "Extremely High" },
       { title: `Automated ${courseQuery} Systems Lead`, description: `Leads digital transformation and automated operations within the ${courseQuery} industry.`, estimatedDemand: "High" }
@@ -178,8 +207,8 @@ Return a valid JSON object with this EXACT structure:
       { legacyTask: "Basic static information retrieval", reason: "Semantic search and RAG knowledge bases provide instant answers." }
     ];
     tools = [
-      { name: "Python & SQL Fundamentals", category: "Data Automation", whyItMatters: "Essential for automating data flow in any domain." },
-      { name: "Google Gemini API & Prompting", category: "AI Orchestration", whyItMatters: "Integrates AI capabilities directly into industry tools." }
+      { name: "Python & SQL Fundamentals", category: "Data Automation", whyItMatters: "Essential for automating data flow in any domain.", learnUrl: "https://www.codecademy.com/" },
+      { name: "Google Gemini API & Prompting", category: "AI Orchestration", whyItMatters: "Integrates AI capabilities directly into industry tools.", learnUrl: "https://aistudio.google.com/" }
     ];
   }
 
@@ -191,18 +220,23 @@ Return a valid JSON object with this EXACT structure:
       routineTaskAutomation: autoScore,
       humanAdvantageIndex: humanScore
     },
+    subDisciplineBreakdown: subDisciplines,
     whatIsObsolescent: legacyTasks,
     emergingHybridRoles: hybridRoles,
     skillBridgeRoadmap: [
       {
         phase: "Phase 1: Immediate 90-Day Bridge",
         targetSkill: "Prompt Engineering & Domain AI Automation",
-        actionPlan: `Master integrating AI assistants (Gemini, ChatGPT) into daily ${courseQuery} research and workflow automation.`
+        actionPlan: `Master integrating AI assistants into daily ${courseQuery} research and workflow automation.`,
+        recommendedCertification: "IBM Applied AI Professional Certificate",
+        estimatedHours: "25 Hours"
       },
       {
         phase: "Phase 2: 1-Year Master Strategy",
         targetSkill: "Data Literacy & Hybrid Tool Stack",
-        actionPlan: `Learn fundamental data analytics (SQL/Python or low-code automation tools) to build specialized workflows for your domain.`
+        actionPlan: `Learn fundamental data analytics (SQL/Python or low-code automation tools) to build specialized workflows for your domain.`,
+        recommendedCertification: "Google Data Analytics Professional Certificate",
+        estimatedHours: "60 Hours"
       }
     ],
     recommendedTools: tools

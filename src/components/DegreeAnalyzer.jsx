@@ -1,7 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import { analyzeDegree } from '../services/horizonEngine';
 import { exportAnalysisToPDF } from '../utils/pdfExport';
-import { Search, Compass, AlertCircle, RefreshCw, Sparkles, Download, ArrowUpRight, Zap, Shield, Cpu } from 'lucide-react';
+import {
+  Search, Compass, AlertCircle, RefreshCw, Sparkles, Download,
+  ExternalLink, Zap, Shield, Cpu, Layers, BookOpen
+} from 'lucide-react';
 
 export default function DegreeAnalyzer({ courseQuery, setCourseQuery, analysisData, setAnalysisData }) {
   const [isLoading, setIsLoading] = useState(false);
@@ -16,7 +19,6 @@ export default function DegreeAnalyzer({ courseQuery, setCourseQuery, analysisDa
     'Nursing & Healthcare'
   ];
 
-  // Run initial analysis if empty
   useEffect(() => {
     if (!analysisData && !courseQuery) {
       handleSearch('Law & Legal Studies');
@@ -75,6 +77,12 @@ export default function DegreeAnalyzer({ courseQuery, setCourseQuery, analysisDa
       </div>
     `;
     exportAnalysisToPDF(`Future Career Blueprint - ${analysisData.degreeName}`, htmlContent);
+  };
+
+  const getDisruptionBadgeClass = (level) => {
+    if (level === 'High Disruption') return 'badge-danger';
+    if (level === 'High Human Advantage') return 'badge-success';
+    return 'badge-warning';
   };
 
   return (
@@ -158,7 +166,7 @@ export default function DegreeAnalyzer({ courseQuery, setCourseQuery, analysisDa
           </div>
           <h3 style={{ fontSize: '1rem', marginBottom: '0.25rem' }}>Analyzing 5-Year Disruption Radar</h3>
           <p style={{ fontSize: '0.875rem', color: 'var(--text-muted)' }}>
-            Scanning labor market projections, automated task velocity, and emerging hybrid job titles...
+            Scanning labor market projections, automated task velocity, and sub-discipline impacts...
           </p>
         </div>
       )}
@@ -173,7 +181,7 @@ export default function DegreeAnalyzer({ courseQuery, setCourseQuery, analysisDa
                 <h3 style={{ fontSize: '1.125rem' }}>5-Year Outlook for {analysisData.degreeName}</h3>
                 <span className="badge badge-info">2026 – 2031 Radar</span>
               </div>
-              <p style={{ fontSize: '0.875rem', color: 'var(--text-primary)', fontWeight: 500, lineHeight: 1.4 }}>
+              <p style={{ fontSize: '0.84375rem', color: 'var(--text-primary)', fontWeight: 500, lineHeight: 1.45 }}>
                 {analysisData.executiveOutlook}
               </p>
             </div>
@@ -222,6 +230,31 @@ export default function DegreeAnalyzer({ courseQuery, setCourseQuery, analysisDa
               </p>
             </div>
           </div>
+
+          {/* Sub-Discipline Breakdown Card */}
+          {analysisData.subDisciplineBreakdown && analysisData.subDisciplineBreakdown.length > 0 && (
+            <div className="card">
+              <h4 style={{ fontSize: '0.9375rem', marginBottom: '0.875rem', display: 'flex', alignItems: 'center', gap: '0.375rem' }}>
+                <Layers size={16} color="var(--color-info)" />
+                Sub-Discipline Disruption Breakdown
+              </h4>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '0.625rem' }}>
+                {analysisData.subDisciplineBreakdown.map((sub, idx) => (
+                  <div key={idx} style={{ background: 'var(--bg-subtle)', padding: '0.75rem 0.875rem', borderRadius: 'var(--radius-sm)', border: '1px solid var(--border-color)' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '0.25rem' }}>
+                      <span style={{ fontSize: '0.84375rem', fontWeight: 700, color: 'var(--text-primary)' }}>{sub.subField}</span>
+                      <span className={`badge ${getDisruptionBadgeClass(sub.disruptionLevel)}`} style={{ fontSize: '0.6875rem' }}>
+                        {sub.disruptionLevel}
+                      </span>
+                    </div>
+                    <p style={{ fontSize: '0.78125rem', color: 'var(--text-secondary)' }}>
+                      {sub.impactSummary}
+                    </p>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
 
           {/* Emerging 2028-2030 Hybrid Job Titles */}
           <div className="card">
@@ -274,7 +307,8 @@ export default function DegreeAnalyzer({ courseQuery, setCourseQuery, analysisDa
           {/* Recommended AI & Tech Tools Matrix */}
           {analysisData.recommendedTools && analysisData.recommendedTools.length > 0 && (
             <div className="card">
-              <h4 style={{ fontSize: '0.9375rem', marginBottom: '0.875rem' }}>
+              <h4 style={{ fontSize: '0.9375rem', marginBottom: '0.875rem', display: 'flex', alignItems: 'center', gap: '0.375rem' }}>
+                <BookOpen size={16} color="var(--color-info)" />
                 Recommended Tech & AI Tools to Master Now
               </h4>
               <div className="grid-2">
@@ -282,7 +316,19 @@ export default function DegreeAnalyzer({ courseQuery, setCourseQuery, analysisDa
                   <div key={idx} style={{ background: 'var(--bg-subtle)', padding: '0.875rem', borderRadius: 'var(--radius-sm)', border: '1px solid var(--border-color)' }}>
                     <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '0.25rem' }}>
                       <span style={{ fontSize: '0.875rem', fontWeight: 700, color: 'var(--text-primary)' }}>{tool.name}</span>
-                      <span className="badge badge-neutral" style={{ fontSize: '0.6875rem' }}>{tool.category}</span>
+                      {tool.learnUrl ? (
+                        <a
+                          href={tool.learnUrl}
+                          target="_blank"
+                          rel="noreferrer"
+                          className="badge badge-neutral"
+                          style={{ fontSize: '0.6875rem', textDecoration: 'none', display: 'inline-flex', alignItems: 'center', gap: '0.2rem' }}
+                        >
+                          {tool.category} <ExternalLink size={10} />
+                        </a>
+                      ) : (
+                        <span className="badge badge-neutral" style={{ fontSize: '0.6875rem' }}>{tool.category}</span>
+                      )}
                     </div>
                     <p style={{ fontSize: '0.78125rem', color: 'var(--text-secondary)' }}>
                       {tool.whyItMatters}
